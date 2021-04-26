@@ -21,12 +21,72 @@ app.component('app-header', {
         <ul class="navbar-nav mr-auto">
           <li class="nav-item active">
             <router-link class="nav-link" to="/">Home <span class="sr-only">(current)</span></router-link>
-          </li>
+            </li>
+            <li class="nav-item active">  
+            <router-link class="nav-link" to="/form">Upload<span class="sr-only">(current)</span></router-link>
+
+            </li>
         </ul>
       </div>
     </nav>
-    `
+    `,
 });
+
+app.component('upload-form',{
+    name: 'UploadForm',
+    template: `
+    <h2> Upload Form </h2>
+    <form method='POST' action='#' enctype='multipart/form-data' @submit.prevent="uploadPhoto">
+    <div class="form-group">
+        <label for="description">Description</label>
+        <textarea id="description" class="form-control" name="description"> </textarea>
+    </div>
+  
+    <div>
+                <label for="photo">Photo Upload:</label>
+                <br>
+                <input type="file" name="photo">
+    </div>
+    <br>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+    `,
+    methods:{
+        uploadPhoto(){
+            let self = this;
+            let form = document.forms[0]
+            let form_data = new FormData(form);
+
+            fetch("/api/upload", {
+                method: 'POST',
+                body: form_data,
+                headers:{
+                    'X-CSRFToken': token
+                },
+                credentials: 'same-origin'
+            })
+                .then(function (response) {
+                return response.json();
+                })
+                .then(function (jsonResponse) {
+                // display a success message
+                console.log(jsonResponse);
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+        }
+    },
+    data()
+    {
+        return{
+            success: false,
+            errors:[]
+        }
+    }
+});
+
+
 
 app.component('app-footer', {
     name: 'AppFooter',
@@ -68,12 +128,13 @@ const NotFound = {
         return {}
     }
 };
+const UploadForm = app.component('upload-form');
 
 // Define Routes
 const routes = [
     { path: "/", component: Home },
     // Put other routes here
-
+    { path: "/form", component: UploadForm },
     // This is a catch all route in case none of the above matches
     { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFound }
 ];
