@@ -32,59 +32,81 @@ app.component('app-header', {
     `,
 });
 
-app.component('upload-form',{
+const uploadForm = {
     name: 'UploadForm',
     template: `
-    <h2> Upload Form </h2>
-    <form method='POST' action='#' enctype='multipart/form-data' @submit.prevent="uploadPhoto">
-    <div class="form-group">
-        <label for="description">Description</label>
-        <textarea id="description" class="form-control" name="description"> </textarea>
+    <h2> Upload Form</h2>
+
+    <div v-if="isSuccess" class="alert alert-success">
+        File Upload Successful
     </div>
-  
-    <div>
-                <label for="photo">Photo Upload:</label>
+    
+    <ul v-if="!isSuccess && errors.length > 0" class="alert alert-danger">
+        <li v-for="i in errors"> {{ i.error_message }}</li>
+    </ul>
+
+    
+
+    <form id="uploadForm" @submit.prevent="uploadPhoto" method = "POST" enctype = 'multipart/form-data'> 
+   
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" class="form-control" name="description"> </textarea>
+            </div>
+            <div class="form-group">
+                <label for="photo">Photo Upload</label>
                 <br>
                 <input type="file" name="photo">
-    </div>
-    <br>
-    <button type="submit" class="btn btn-primary">Submit</button>
-  </form>
+            </div>
+        </div>
+        <button type="submit" name="submit" class="btn btn-primary">Submit</button>
+    </form>
+    
     `,
-    methods:{
+    methods: {
         uploadPhoto(){
             let self = this;
-            let form = document.forms[0]
-            let form_data = new FormData(form);
+            let uploadForm = document.getElementById('uploadForm');
+            let form_data = new FormData(uploadForm);
 
             fetch("/api/upload", {
                 method: 'POST',
                 body: form_data,
-                headers:{
+                headers: {
                     'X-CSRFToken': token
                 },
                 credentials: 'same-origin'
             })
-                .then(function (response) {
+            .then(function (response) {
                 return response.json();
                 })
                 .then(function (jsonResponse) {
-                // display a success message
+                    if(jsonResponse.errors != null){
+                        self.isSuccess = false;
+                        self.errors = jsonResponse.errors;
+                        console.log("error  detected");
+                        console.log(self.errors);
+
+                    }else if(jsonResponse.message != null){
+                        self.isSuccess = true;
+                        self.errors = [];
+                        console.log("error not detected");
+                    }
                 console.log(jsonResponse);
                 })
                 .catch(function (error) {
-                    console.log(error);
+                console.log(error);
                 });
+            
         }
     },
-    data()
-    {
-        return{
-            success: false,
-            errors:[]
+    data() {
+        return {
+            isSuccess: false,
+            errors: []
         }
     }
-});
+};
 
 
 
@@ -128,13 +150,12 @@ const NotFound = {
         return {}
     }
 };
-const UploadForm = app.component('upload-form');
 
 // Define Routes
 const routes = [
     { path: "/", component: Home },
     // Put other routes here
-    { path: "/form", component: UploadForm },
+    { path: "/form", component: uploadForm },
     // This is a catch all route in case none of the above matches
     { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFound }
 ];

@@ -34,7 +34,7 @@ def upload():
             error = [{'error_message': i} for i in form_errors(form)]
         return jsonify({'errors':error})
 
-    return render_template('upload.html',form=form)
+    #return render_template('upload.html',form=form)
 
 # Please create all new routes and view functions above this route.
 # This route is now our catch all route for our VueJS single page

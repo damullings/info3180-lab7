@@ -4,7 +4,7 @@ from wtforms import StringField
 from wtforms.validators import InputRequired
 
 class UploadForm(FlaskForm):
-    description = StringField('Username', validators=[InputRequired()])
+    description = StringField('description', validators=[InputRequired()])
 
     photo = FileField("Photo"
     ,validators=[
